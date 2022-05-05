@@ -1,0 +1,5 @@
+一.项目启动条件
+1.redis-server开启
+2.celery开启，celery开启需要在manage.py的同级目录下使用 celery -A my_blog worker --pool=solo -l info 启动celery
+3.falsk开启
+4.django后台开启

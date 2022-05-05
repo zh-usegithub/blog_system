@@ -1,0 +1,18 @@
+文章系统-缓存问题-文章列表页
+缓存-把高频读取的数据，放置到更快的存储介质里
+缓存方案1-cache_page(过期时间s)
+优点：简单
+缺点：1.无法按照具体的访客身份，进行针对性的存储，例如：存储的是博主访问自身博客的数据，访客到访时可能会读取到博主触发的缓存
+2.删除缓存成本过高【出现新旧数据不一致】
+
+缓存方案2-局部-cache.set/get
+优点：灵活，存储成本最优,删除成本低
+缺点：代码实现成本较高
+案例：模型类中定义 classmethod
+     class Topic
+        @classmethod
+        def get_topic_list(cls):
+            if cache:
+               return cache
+            data = cls.objects.filter()
+            return data
