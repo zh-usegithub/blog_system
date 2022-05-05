@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<!--
+author:guojunyu
+desc:this demo is about blog. PLEASE NOTE:If you have trouble running it ,try any of the other demos or connect with auther.
+A ny individuals and organizations and not for commercial use, professiona website for customized web site.
+-->
+<head>
+        <meta charset="utf-8">
+        <link href="/static/css/login_reglogin.css" rel='stylesheet' type='text/css' />
+        <link href="/static/css/index.css" rel="stylesheet">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="/static/js/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+</body>
+
+
+<script>
+    token = window.localStorage.getItem('dnblog_token');
+    username = window.localStorage.getItem('dnblog_user');
+    var html_body = ''
+    $.ajax({
+       // 请求方式
+       type:"get",
+       // url
+       url:"http://127.0.0.1:8000/v1/users/"+ username,
+       beforeSend: function(request) {
+           request.setRequestHeader("Authorization", token);
+       },
+       success:function (result) {
+           if (200 == result.code){
+               console.log(result);
+               $(document).attr('title', '个人信息修改-'+ result.data.nickname+'的博客');
+               html_body += '<div class="bg">';
+               html_body += '<img src="/static/images/c.jpg" alt="">';
+               html_body += '</div>'
+               html_body += '<div class="main">';
+               html_body += '<div class="header" >';
+               html_body += '<h1>个人信息修改</h1>';
+               html_body += '</div>';
+               html_body += '<p></p>';
+               html_body += '<ul class="left-form">';
+               html_body += '<li>';
+               html_body += '<form action=""  method="post" enctype="multipart/form-data" class="avatar_form">';
+               //avatar
+               if (result.data.avatar) {
+                   var avatar_url = 'http://127.0.0.1:8000/media/'+ result.data.avatar;
+                   html_body += '<p class="avatar"> <img src=' + avatar_url + ' alt=""> </p>';
+               }else{
+                   html_body += '<p class="avatar"> <img src="/static/images/avatar.jpg" alt=""> </p>';
+               }
+               html_body += '<p>';
+
+               html_body += '<label for="avatar">上传头像</label>&nbsp;';
+               html_body += '&nbsp;<input type="file" name="avatar" id="avatar">';
+               html_body += '</br>'
+               html_body += '</br>'
+               html_body += '<input id="submit-btn" type="button" value="上传" onclick="upload()">';
+               html_body += '</p>';
+               html_body += '</form>';
+               html_body += '</li>';
+
+               html_body += '<label style="float:left;display:inline-block">昵称: </label>'
+               html_body += '<div class="clear"> </div>';
+               html_body += '<li>';
+               html_body += '<input type="text" class="nickname" name="nickname" value="' + result.data.nickname + '"' + 'placeholder="请输入新的昵称" required maxlength="10" />';
+               html_body += '<div class="clear"> </div>';
+               html_body += '</li>';
+               html_body += '<label style="float:left;display:inline-block">个人签名: </label>'
+               html_body += '<div class="clear"> </div>';
+               html_body += '<li>';
+               if(result.data.sign){
+                   html_body += '<input type="text" class="sign" name="sign" placeholder="请输入个人签名" required  value="' + result.data.sign + '"' + '/>';
+               }else{
+                   html_body += '<input type="text" class="sign" name="sign" placeholder="请输入个人签名" required  value=""/>';
+               }
+               html_body += '<div class="clear"> </div>';
+               html_body += '</li>';
+               html_body += '<label style="float:left;display:inline-block">个人描述: </label>'
+               html_body += '<div class="clear"> </div>';
+               if(result.data.info){
+                   html_body += '<textarea class="info" rows="3" cols="20" placeholder="请输入个人描述" style="width:100%; font-size:15px; padding:0.7em 2em 0.7em 1em" required>' + result.data.info + '</textarea>';
+               }else{
+                   html_body += '<textarea class="info" rows="3" cols="20" placeholder="请输入个人描述" style="width:100%; font-size:15px; padding:0.7em 2em 0.7em 1em" required></textarea>';
+               }
+               html_body += '<div class="clear"> </div>';
+               html_body += '</li>';
+              // html_body += '<li>';
+              // html_body += '<input type="password" class="password_1" name="password_1" placeholder="请输入密码" required minlength="6" maxlength="11"/>';
+              // html_body += '<div class="clear"> </div>';
+              // html_body += '</li>';
+              // html_body += '<li>';
+              // html_body += '<input type="password" class="password_2" name="password_2" placeholder="请再次确认密码" required minlength="6" maxlength="11"/>';
+              // html_body += '<div class="clear"> </div>';
+              // html_body += '</li>';
+
+               html_body += '<li style="border:none">';
+               html_body += '</br>'
+               html_body += '<input type="button" value="保存" onclick="changeInfo()">';
+               html_body += '</li>';
+               html_body += '</ul>';
+               html_body += '<div class="clear"> </div>';
+               html_body += '</div>';
+               $('body').html(html_body);
+               //初始化登出事件
+               loginOut()
+             }else{
+                 alert(result.error)
+             }
+         }
+    });
+
+    function upload(){
+        var token = window.localStorage.getItem('dnblog_token');//如果这里取本地存储中的dnblog_token不存在时，会返回一个nil值，不会报错
+        var username = window.localStorage.getItem('dnblog_user');//从浏览器中取出token中的username,提供给后端使用
+        //$('.avatar_form').attr('action', 'http://127.0.0.1/users/avatar')
+        var url = 'http://127.0.0.1:8000/v1/users/' + username + '/avatar'//在url中传递用户名，在后端中使用path转换器接收这个用户名
+        formdata = new FormData();//生成一个from表单,使用js动态的构建一个from
+        formdata.append("avatar",$("#avatar")[0].files[0]);//生成一个文件上传需要的文件框，文件的名字是avatar,在后端取值的时候就需要用avatar属性取出具体的值
+        $.ajax({
+        //使用ajax上传文件以下的两项processData（不预先处理数据）和contentType是必须要写的,目前都写成false,这是ajax的要求
+            processData: false,
+            contentType: false,
+            url: url,
+            type: 'post',
+            data: formdata,
+            //下面的beforeSend函数可以优化一下，如果token的值没有，即nil,表示本地存储中没有这个token，那么可以判断一下，这时就不用传递这个token回后端
+            beforeSend: function(request) {
+                request.setRequestHeader("Authorization", token);//这里是做校验，判断当前的用户是否登录，登录状态才允许修改个人信息
+            },
+            success: function(arg) {
+	            if (arg.code == 200) {
+		            alert('成功！')
+                    window.location.reload()//上传成功头像后刷新当前界面
+	            } else {
+		            alert('失败！')
+                    }
+                }
+            })
+
+        }
+
+    function changeInfo(){
+        var token = window.localStorage.getItem('dnblog_token');//取出在登录的时候由后端生成并保存在前端浏览器的token
+        var username = window.localStorage.getItem('dnblog_user');
+        var nickname = $('.nickname').val();
+        var sign = $('.sign').val();
+        var info = $('.info').val();
+        var post_data = {'nickname':nickname, 'sign':sign, 'info':info};
+
+        $.ajax({
+        // 请求方式
+        type:"put",
+        // contentType 
+        contentType:"application/json",
+        // dataType
+        dataType:"json",
+        // url
+        url:"http://127.0.0.1:8000/v1/users/" + username,
+        // 把JS的对象或数组序列化一个json 字符串
+        data:JSON.stringify(post_data),
+        // result 为请求的返回结果对象
+        beforeSend: function(request) {
+            request.setRequestHeader("Authorization", token);//这里是添加请求头中的Authorization字段的值，发送一次put请求的时候，request-headers中会携带Authorization字段，值为token，以后在校验当前登录用户名的时候，直接取出前端浏览器中这个headers中会携带Authorization键的值，然后使用jwt规则decode这个token取出里面的username字段便可获得当前登录用户名
+        },
+        success:function (result) {
+            if (200 == result.code){
+                alert("修改成功")
+
+            }else{
+                alert(result.error)
+                window.location.href = '/login'//跳转到指定url
+            }
+           }
+       });
+
+    }
+</script>
+
+</html>
